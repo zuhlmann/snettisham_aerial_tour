@@ -28,7 +28,10 @@
 
 <!-- leaflet js -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src=".snettisham_aerial_tour_point.js"></script>
+<script src="snettisham_line.js"></script>
+<script src="snettisham_point.js"></script>
+<script src="snettisham_callouts.js"></script>
+
 
 <script>
     // Map Initialization
@@ -74,22 +77,12 @@
         ]
         }
 
-    function getColor(d) {
-        return d == "A" ? '#fc0303' :
-            d == "B"  ? '#ffee00' :
-            d == "C"  ? '#00ff1a' :
-            d == "D"  ? '#ff00ff' :
-            d == "E"   ? '#000000' :
-            d == "F"   ? '#1900ff' :
-                        '#FFEDA0';
-    }
-
     function getColor0(d) {
         return d == "A" ? 'red' :
             ["A", "G"].includes(d) ? '#0008ff' :
             ["B", "H"].includes(d) ? '#00ff40' :
             ["C", "I"].includes(d)  ? '#ff8400' :
-            ["D", "J"].includes(d)   ? '#000000' :
+            ["D", "J"].includes(d)   ? '#ff6aef' :
             ["E", "K"].includes(d)   ? '#9900ff' :
             ['F',"L"].includes(d)   ? '#fa0000' :
                         'green';
@@ -100,7 +93,7 @@
             ["A", "G"].includes(d) ? 'blue' :
             ["B", "H"].includes(d) ? 'green' :
             ["C", "I"].includes(d)  ? 'orange' :
-            ["D", "J"].includes(d)   ? 'black' :
+            ["D", "J"].includes(d)   ? 'pink' :
             ["E", "K"].includes(d)   ? 'purple' :
             ['F',"L"].includes(d)   ? 'red' :
                         'green';
@@ -110,66 +103,46 @@
     function style(feature) {
         return {
             color: getColor0(feature.properties.ID),
-            weight: 2,
+            weight: 3,
         };
     }
 
-    L.geoJson(lines, {style: style})
+    L.geoJson(lineJSON, {style: style})
     .addTo(map)
 
-    // var geojsonMarkerOptions3 = {
-    //     radius: 8,
-    //     color: "yellow",
-    //     weight: 1,
-    // };
 
-
-    geojsonLayer3 = L.geoJson(points, {
+    geojsonLayer3 = L.geoJson(pointJSON, {
                 pointToLayer: function(feature, latlng) {
                     return L.circleMarker(latlng,  {radius: 10, opacity:1, fillOpacity:0.8, color:getColor2(feature.properties.ID)});
                 },
                 onEachFeature: function (feature, layer) {
-                            layer.bindPopup(feature.properties.Location);
+                            layer.bindPopup(feature.properties.youtube );
+                            
                         }
                 });
 
     geojsonLayer3.addTo(map);
 
-    // geojsonLayer3 = L.geoJson(points, {
-    //             pointToLayer: function(feature, latlng) {
-    //                 return L.circleMarker(latlng,  {radius: 10, opacity:1, fillOpacity:0.8, fillcolor:"yellow"});
-    //             },
-    //             onEachFeature: function (feature, layer) {
-    //                         layer.bindPopup("test");
-    //                     }
-    //             });
+    callout_layer = L.geoJson(callouts, {
+                pointToLayer: function(feature, latlng) {
+                    return L.circleMarker(latlng,  {radius: 5, opacity:1, fillOpacity:1, color:"white", fillColor:"black",});
+                },
+                onEachFeature: function (feature, layer) {
+                            layer.bindPopup(feature.properties.Name );
+                            
+                        }
+                });
 
-    //             onEachFeature: function (feature, layer) {
-    //             layer.bindPopup("test");
-    //         }
-    //         });
+    callout_layer.addTo(map);
 
-    //         geojsonLayer3.addTo(map);
-
-    //         }
-
-   
-
-    // L.geoJSON(lines, {
-    //     onEachFeature: function(feature, layer) {
-    //         layer.bindPopup('<b>NAME: </b>' + feature.properties.Name)
-    //     },
-    //     style: {
-    //         weight: 2,
-    //         color: '#f01a1a',
-    //     }
-    // }).addTo(map)
     
     // // osm layer
     // var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     // });
     // osm.addTo(map);
+
+
 
     // USGS Topo
     var USGS_USTopo = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
@@ -182,17 +155,40 @@
     maxZoom: 20,
     subdomains:['mt0','mt1','mt2','mt3']
 });
-    googleTerrain.addTo(map)
+    // googleTerrain.addTo(map)
 
-    //google satellite
-    var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
-    });
-    googleSat.addTo(map);
+    // //google satellite
+    // var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    //     maxZoom: 20,
+    //     subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+    // });
+    // googleSat.addTo(map);
+
+    // esri imagery
+    var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+});
+    Esri_WorldImagery.addTo(map)
 
     // Marker
-    var singleMarker = L.marker([58.161749, -133.727897]).addTo(map)
-    .bindPopup('<iframe width="300" height="300" src="https://www.youtube.com/embed/gIKmOjr_2yw?si=k4HgIctpTv2qm5c3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>')
+
+    var myIcon = L.icon({
+        iconUrl: 'my-icon.png',
+        iconSize: [38, 95],
+        iconAnchor: [22, 94],
+        popupAnchor: [-3, -76],
+        shadowUrl: 'my-icon-shadow.png',
+        shadowSize: [68, 95],
+        shadowAnchor: [22, 94]
+    });
+
+
+    // po={content:'<p>Hello world!<br />This is a nice popup.</p>',offset:[-110,30]}
+    // // var popup = L.popup([58.161749, -133.727897],po)
+    // var popup = L.popup({offset:L.point(100,100)})
+    //     .setLatLng([58.161749, -133.727897])
+    //     // .setContent('WHATEVER')
+    //     .openOn(map);
+
 
 </script>
